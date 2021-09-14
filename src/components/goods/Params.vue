@@ -481,8 +481,8 @@ export default {
           attr_vals: row.attr_vals.join(" "),
         }
       );
-      if (res.meta.status !== 200) return this.$message.error("删除参数项失败");
-      return this.$message.success("删除参数项成功");
+      if (res.meta.status !== 200) return this.$message.error("添加参数项失败");
+      return this.$message.success("添加参数项成功");
     },
   },
   created() {
