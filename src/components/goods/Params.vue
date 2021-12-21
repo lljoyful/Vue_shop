@@ -32,8 +32,10 @@
       <!-- Tab 页签区域 -->
       <el-tabs v-model="activeName" @tab-click="handleTabClick">
         <!-- 添加动态参数的面板 -->
+        <!-- label是显示的标签名称，name是唯一的标签名，会自动绑定到activeName -->
         <el-tab-pane label="动态参数" name="many">
           <!-- 添加参数的按钮 -->
+          <!-- disabled是否禁用按钮 -->
           <el-button
             type="primary"
             size="mini"
@@ -81,10 +83,12 @@
             </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index" label="序号"></el-table-column>
+            <!-- 参数名称 -->
             <el-table-column
               label="参数名称"
               prop="attr_name"
             ></el-table-column>
+            <!-- 操作 -->
             <el-table-column label="操作">
               <template slot-scope="scope">
                 <div>
@@ -110,6 +114,7 @@
           </el-table>
         </el-tab-pane>
         <!-- 添加静态属性的面板 -->
+        <!-- label是显示的标签名称，name是唯一的标签名 -->
         <el-tab-pane label="静态属性" name="only">
           <!-- 添加属性的按钮 -->
           <el-button
@@ -136,6 +141,8 @@
                     {{ val }}
                   </el-tag>
                   <!-- 输入文本框 -->
+                  <!-- v-if="scope.row.inputVisible" v-model="scope.row.inputValue"为什么要这么写, -->
+                  <!-- 因为如果给v-model单独赋值.那么当点击一个tag的时候,所有的输入框都会显示,值也会相同 -->
                   <el-input
                     class="input-new-tag"
                     v-if="scope.row.inputVisible"
@@ -196,13 +203,14 @@
       width="50%"
       @close="addDialogClosed"
     >
-      <!-- 添加参数的对话框 -->
+      <!-- 添加参数的表格 -->
       <el-form
         :model="addForm"
         :rules="addFormRules"
         ref="addFormRef"
         label-width="100px"
       >
+        <!-- prop="attr_name"是验证规则 -->
         <el-form-item :label="titleText" prop="attr_name">
           <el-input v-model="addForm.attr_name"></el-input>
         </el-form-item>
@@ -249,11 +257,14 @@ export default {
       // 级联选择框的配置对象
       cateProps: {
         expandTrigger: "hover",
+        // 实际选择的值
         value: "cat_id",
+        // 看到的值
         label: "cat_name",
+        // 级联的东西
         children: "children",
       },
-      // 级联选择框双向绑定道德数组
+      // 级联选择框双向绑定到的数组
       selectedCateKeys: [],
       // 被激活的页签的名称
       activeName: "many",
@@ -341,6 +352,7 @@ export default {
       if (res.meta.status !== 200) {
         return this.$message.error("获取选中分类列表失败");
       }
+      // 判断获取到的数据属于谁
       if (this.activeName == "many") {
         this.manyTableData = res.data;
       } else {
@@ -469,9 +481,10 @@ export default {
     //删除参数项
     handleClose(row, index) {
       row.attr_vals.splice(index, 1);
+      // 保存到数据库
       this.saveAttrVals(row);
     },
-    // 保存到数据库
+    // tag标签内容保存到数据库
     async saveAttrVals(row) {
       const { data: res } = await this.$http.put(
         `categories/${this.cateId}/attributes/${row.attr_id}`,
@@ -481,8 +494,8 @@ export default {
           attr_vals: row.attr_vals.join(" "),
         }
       );
-      if (res.meta.status !== 200) return this.$message.error("添加参数项失败");
-      return this.$message.success("添加参数项成功");
+      if (res.meta.status !== 200) return this.$message.error("修改参数项失败");
+      return this.$message.success("修改参数项成功");
     },
   },
   created() {

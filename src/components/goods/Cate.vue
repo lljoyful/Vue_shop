@@ -16,6 +16,11 @@
         </el-col>
       </el-row>
       <!-- 表格区 -->
+      <!-- columns属性表示表格各列的配置：label列标题名称，prop列内容的属性名 -->
+      <!-- selection-type是否为多选类型的表格 -->
+      <!-- expand-type是否为展开行 -->
+      <!-- show-index是否设置索引列，index-text可以设置索引列名称 -->
+      <!-- show-row-hover鼠标悬停高亮 -->
       <tree-table
         class="treeTable"
         :data="catelist"
@@ -27,6 +32,7 @@
         :show-row-hover="false"
       >
         <!-- 是否有效 -->
+        <!-- 这里用的是slot-scope接收数据，并没有用自带的prop属性 -->
         <template slot="isok" slot-scope="scope">
           <div>
             <i
@@ -99,7 +105,10 @@
           <el-input v-model="addCateForm.cat_name"></el-input>
         </el-form-item>
         <el-form-item label="父级分类：">
+          <!-- 级联选择器 -->
           <!-- options指定数据源 -->
+          <!-- props用来指定数据对象 -->
+          <!-- clearable可清空 -->
           <el-cascader
             v-model="selectedKeys"
             :options="parentCateList"
@@ -127,7 +136,9 @@ export default {
       // 商品分类的数据列表查询条件
       queryInfo: {
         type: 3,
+        // 当前页码
         pagenum: 1,
+        // 每页数据条数
         pagesize: 5,
       },
       // 商品分类的数据列表，默认为空
@@ -136,6 +147,7 @@ export default {
       total: 0,
       //为table指定列的定义
       columns: [
+        // label列标题名称，prop列内容的属性名
         {
           label: "分类标题",
           prop: "cat_name",
@@ -188,9 +200,13 @@ export default {
       //指定级联选择器的配置对象
       cascaderProps: {
         expandTrigger: "hover",
+        // 指定具体选中的属性
         value: "cat_id",
+        // 指定看到的属性
         label: "cat_name",
+        // 指定父子嵌套用的哪个属性
         children: "children",
+        // 是否严格的遵守父子节点不互相关联
         checkStrictly: true,
       },
       //选中的父级分类的id数组
@@ -207,6 +223,7 @@ export default {
       // console.log(res.data);
       // 把数据列表赋值给catelist
       this.catelist = res.data.result;
+      // 总数据条数
       this.total = res.data.total;
     },
     //监听pagesize改变的事件
@@ -240,7 +257,9 @@ export default {
     // 选择项发生变化触发这个函数
     parentCateChange() {
       if (this.selectedKeys.length > 0) {
+        // 等级
         this.addCateForm.cat_level = this.selectedKeys.length;
+        // 父id
         this.addCateForm.cat_pid =
           this.selectedKeys[this.selectedKeys.length - 1];
       } else {
@@ -266,7 +285,9 @@ export default {
     },
     //关闭添加分类对话框,清空对话框
     addCateDialogClosed() {
+      // 分类名称清空
       this.$refs.addCateFormRef.resetFields();
+      // 父级分类清空
       this.selectedKeys = [];
       this.addCateForm.cat_level = 0;
       this.addCateForm.cat_pid = 0;

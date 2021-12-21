@@ -18,9 +18,11 @@
       </el-row>
       <!-- 角色列表区 -->
       <el-table :data="roleList" border stripe>
-        <!-- 展开列 -->
+        <!-- 展开列,type类型为expand -->
         <el-table-column type="expand">
           <template slot-scope="scope">
+            <!-- 为了渲染权限树，可以加入栅格系统，第一列（5列）是一级权限，第二列二级权限，第三列三级权限 （二三级一共19列） -->
+            <!-- class等于数组是为了加边框线 -->
             <el-row
               :class="['bdbottom', i1 == 0 ? 'bdtop' : '', 'vcenter']"
               v-for="(item1, i1) in scope.row.children"
@@ -31,17 +33,19 @@
                 <el-tag closable @close="removeRightById(scope.row, item1.id)">
                   {{ item1.authName }}
                 </el-tag>
+                <!-- 图标 -->
                 <i class="el-icon-caret-right"></i>
               </el-col>
 
               <!-- 渲染二级和三级权限 -->
               <el-col :span="19">
-                <!-- 二级渲染 -->
+                <!-- 二级渲染，加el-row相当于又把剩余的行分成了24份 -->
                 <el-row
                   :class="[i2 == 0 ? '' : 'bdtop', 'vcenter']"
                   v-for="(item2, i2) in item1.children"
                   :key="item2.id"
                 >
+                  <!-- 二级权限，6份 -->
                   <el-col :span="6">
                     <el-tag
                       type="success"
@@ -50,9 +54,10 @@
                     >
                       {{ item2.authName }}
                     </el-tag>
+                    <!-- 图标 -->
                     <i class="el-icon-caret-right"></i>
                   </el-col>
-                  <!-- 三级渲染 -->
+                  <!-- 三级渲染，18份 -->
                   <el-col :span="18">
                     <el-tag
                       type="warning"
@@ -73,12 +78,15 @@
         </el-table-column>
         <!-- 索引列 -->
         <el-table-column type="index" label="序号"></el-table-column>
+        <!-- prop指的是列的数据值 -->
         <el-table-column prop="roleName" label="角色名称"> </el-table-column>
         <el-table-column prop="roleDesc" label="角色描述"> </el-table-column>
+        <!-- 加宽度是为了让所有的按钮在一行显示 -->
         <el-table-column label="操作" width="350px">
+          <!-- 需要用到作用域插槽 -->
           <template slot-scope="scope">
             <div>
-              <!-- 修改按钮 -->
+              <!-- 编辑按钮 -->
               <el-button
                 type="primary"
                 icon="el-icon-edit"
@@ -96,7 +104,7 @@
               >
                 删除
               </el-button>
-              <!-- 分配角色按钮 -->
+              <!-- 分配权限按钮 -->
               <el-button
                 type="warning"
                 icon="el-icon-setting"
@@ -171,7 +179,10 @@
       :visible.sync="setRightDialogVisible"
       width="50%"
     >
-      <!-- 树形控件 -->
+      <!-- 树形控件 data是数据，prop是加载哪些数据  -->
+      <!-- node-key设置选中的值用数据的哪个属性表示,这里设置为id,方便后续增删改查操作 -->
+      <!-- default-expand-all默认展开所有节点 -->
+      <!-- default-checked-keys默认勾选的节点的数组，就是默认需要哪些节点已经勾选 -->
       <el-tree
         :data="rightList"
         :props="treeProps"
@@ -248,7 +259,7 @@ export default {
       // 默认选中的节点Id值数组
       defKeys: [],
       defKeysTemps: [],
-      //修改权限的当前角色的id
+      //当前分配权限的当前角色的id
       roleId: "",
     };
   },
@@ -299,6 +310,7 @@ export default {
     },
     //删除角色
     async removeRolesById(roleid) {
+      // 弹框提示删除，config需要抛出异常，否则报错
       const confirmResult = await this.$confirm(
         "此操作将永久删除该角色, 是否继续?",
         "提示",
@@ -348,19 +360,27 @@ export default {
         `roles/${role.id}/rights/${rightId}`
       );
       if (res.meta.status !== 200) return this.$message.error("删除用户失败");
+      // 这里不能调用重新获取权限的函数，因为如果重新获取，页面重新渲染
+      // 那么展开行就会关闭，因此可以直接给当前角色的权限重新赋值
+      // 这里的服务器返回值是当前角色的权限，不是全部角色的权限
       role.children = res.data;
     },
     //展示分配权限的对话框
     async showSetRightDialog(role) {
       this.roleId = role.id;
-      // 获取所有权限的数据
+      // 获取所有权限的数据，用树形的方式获取
       const { data: res } = await this.$http.get("rights/tree");
       if (res.meta.status !== 200) return this.$message.error("读取权限失败");
       //递归获取三级节点的id
       this.rightList = res.data;
+      // 获取三级权限的id
       this.getLeafKey(role, this.defKeysTemps);
+      // 复制数组
       this.defKeys = this.defKeysTemps.slice(0);
+      // 清空this.defKeysTemps,防止下次再次点开含有上次的记录
+      // 也可以添加个关闭事件,当权限框关闭时,清空defKeys中的数据
       this.defKeysTemps.splice(0, this.defKeysTemps.length);
+      // 显示框
       this.setRightDialogVisible = true;
     },
     //通过递归的形式，获取角色下所有三级权限的id
@@ -375,7 +395,9 @@ export default {
     //点击分配权限
     async allotRights() {
       this.setRightDialogVisible = false;
+      // getCheckedNodes：返回目前被选中的节点所组成的数组
       const keys = this.$refs.treeRef.getCheckedKeys();
+      // getHalfCheckedNodes:返回目前半选中的节点所组成的数组
       keys.push(...this.$refs.treeRef.getHalfCheckedKeys());
       const idStr = keys.join(",");
       const { data: res } = await this.$http.post(
@@ -383,7 +405,9 @@ export default {
         { rids: idStr }
       );
       if (res.meta.status !== 200) return this.$message.error("分配权限失败");
+      // 刷新角色列表
       this.getRolesList();
+      // 关闭弹窗
       this.setRightDialogVisible = false;
     },
   },

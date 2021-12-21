@@ -146,6 +146,7 @@ export default {
         address: [],
         addressDetail: "",
       },
+      // 验证规则
       addressFormRules: {
         address: [
           {
@@ -162,6 +163,7 @@ export default {
           },
         ],
       },
+      // 城市数据
       cityData,
       // 物流进度的对话框显示和隐藏
       progressVisible: false,

@@ -12,6 +12,7 @@
     <el-container>
       <!-- 侧边栏 -->
       <el-aside :width="isCollapse ? '64px' : '200px'">
+        <!-- 折叠区域 -->
         <div class="toggle-button" @click="toggleCollapse">|||</div>
         <!-- 侧边栏菜单区 -->
         <el-menu
@@ -138,6 +139,7 @@ export default {
 .el-aside {
   background-color: #333744;
   .el-menu {
+    // 对齐
     border-right: none;
   }
 }
@@ -153,7 +155,9 @@ export default {
   line-height: 24px;
   color: #fff;
   text-align: center;
+  // 设置线的距离
   letter-spacing: 0.2em;
+  // 鼠标变化
   cursor: pointer;
 }
 </style>

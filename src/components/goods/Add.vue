@@ -9,6 +9,7 @@
     <!-- 卡片视图区 -->
     <el-card>
       <!-- 添加商品信息 -->
+      <!-- 提示区 -->
       <el-alert
         title="消息提示的文案"
         type="info"
@@ -18,6 +19,7 @@
       >
       </el-alert>
       <!-- 步骤条区域 -->
+      <!-- active表示当前激活项 -->
       <el-steps
         :space="200"
         :active="activeIndex - 0"
@@ -33,6 +35,7 @@
       </el-steps>
 
       <!-- tab栏区域 -->
+      <!-- label-position="top"为了设置文字在框框的上边 -->
       <el-form
         :model="addForm"
         :rules="addFormRules"
@@ -40,6 +43,9 @@
         label-width="100px"
         label-position="top"
       >
+        <!-- v-model设置当前激活的值 -->
+        <!-- before-leave切换标签之前的钩子，若返回 false 或者返回 Promise 且被 reject，则阻止切换 -->
+        <!-- tab-click被选中的时候触发的 -->
         <el-tabs
           v-model="activeIndex"
           :tab-position="'left'"
@@ -47,6 +53,7 @@
           @tab-click="tabClicked"
         >
           <!-- 基本信息 -->
+          <!-- el-tab-pane只允许作为el-tabs的子节点，所以要把表单放在el-tabs上边 -->
           <el-tab-pane label="基本信息" name="0">
             <el-form-item label="商品名称" prop="goods_name">
               <el-input v-model="addForm.goods_name"></el-input>
@@ -61,6 +68,7 @@
               <el-input v-model="addForm.goods_number" type="number"></el-input>
             </el-form-item>
             <el-form-item label="商品分类" prop="goods_cat">
+              <!-- v-model绑定的必须是数组 -->
               <el-cascader
                 v-model="addForm.goods_cat"
                 :options="cateList"
@@ -77,6 +85,7 @@
               v-for="item in manyTableData"
               :key="item.attr_id"
             >
+              <!-- 复选框组 -->
               <el-checkbox-group v-model="item.attr_vals">
                 <el-checkbox
                   v-for="(items, i) in item.attr_vals"
@@ -100,6 +109,9 @@
           <!-- 商品照片 -->
           <el-tab-pane label="商品图片" name="3">
             <!-- action表示图片要上传的api地址 -->
+            <!-- headers是设置上传图片的请求头 -->
+            <!-- on-success文件上传成功的钩子 -->
+            <!-- on-preview预览图片的钩子 -->
             <el-upload
               :action="uploadURL"
               :on-preview="handlePreview"
@@ -192,8 +204,11 @@ export default {
       // 级联选择框的配置对象
       addProps: {
         expandTrigger: "hover",
+        // 选中的值
         value: "cat_id",
+        // 看到的值
         label: "cat_name",
+        // 级联的值
         children: "children",
       },
       // 动态参数列表数据
@@ -226,12 +241,14 @@ export default {
         this.addForm.goods_cat = [];
       }
     },
+    // 切换标签之前的钩子 activeName进入标签页的名字，oldActiveName离开标签页的名字
     beforeTabLeave(activeName, oldActiveName) {
       if (oldActiveName == "0" && this.addForm.goods_cat.length !== 3) {
         this.$message.error("请选择商品分类");
         return false;
       }
     },
+    // 标签的值改变的时候触发
     async tabClicked() {
       // 访问动态参数面板
       if (this.activeIndex == "1") {
@@ -272,6 +289,7 @@ export default {
     },
     // 文件上传成功时的钩子
     handleSuccess(response) {
+      // 得到图片路径信息对象
       let picStr = { pic: response.data.tmp_path };
       this.addForm.pics.push(picStr);
     },
@@ -298,6 +316,7 @@ export default {
           };
           this.addForm.attrs.push(newInfo);
         });
+        // 因为addForm.goods_cat必须是数组，不能直接转化，所以可以直接使用json进行深拷贝
         const form = JSON.parse(JSON.stringify(this.addForm));
         form.goods_cat = form.goods_cat.join(",");
         // form.attrs=this.addForm.attrs;
@@ -310,6 +329,7 @@ export default {
     },
   },
   computed: {
+    // 获取三级商品分类的id
     cateId() {
       if (this.addForm.goods_cat.length == 3) {
         return this.addForm.goods_cat[2];

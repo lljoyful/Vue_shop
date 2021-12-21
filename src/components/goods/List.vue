@@ -12,6 +12,7 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <!-- 搜索框 -->
+          <!-- clearable清空效果 -->
           <el-input
             placeholder="请输入内容"
             v-model="queryInfo.query"
@@ -33,6 +34,7 @@
       <!-- table表格区 -->
       <el-table :data="goodsList" border stripe>
         <el-table-column type="index" label="序号"></el-table-column>
+        <!-- prop对应的实际的属性名称，label对应的是展示的名称 -->
         <el-table-column prop="goods_name" label="商品名称"> </el-table-column>
         <el-table-column
           prop="goods_price"
@@ -70,6 +72,7 @@
         </el-table-column>
       </el-table>
       <!-- 分页区 -->
+      <!-- background给分页加背景 -->
       <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -92,8 +95,11 @@ export default {
     return {
       // 查询参数对象
       queryInfo: {
+        // 搜素关键字
         query: "",
+        // 查询页码值
         pagenum: 1,
+        // 每页的数据条数
         pagesize: 10,
       },
       // 商品列表
@@ -103,6 +109,7 @@ export default {
     };
   },
   methods: {
+    // 根据分页获取对应的商品列表
     async getGoodsList() {
       const { data: res } = await this.$http.get("goods", {
         params: this.queryInfo,
@@ -122,6 +129,7 @@ export default {
       this.queryInfo.pagenum = val;
       this.getGoodsList();
     },
+    // 删除商品
     async removeById(goodsId) {
       const confirmResult = await this.$confirm(
         "此操作将永久删除该商品, 是否继续?",
@@ -146,7 +154,9 @@ export default {
       });
       this.getGoodsList();
     },
+    // 添加商品
     goAddpage() {
+      // 跳转路由
       this.$router.push("/goods/add");
     },
   },

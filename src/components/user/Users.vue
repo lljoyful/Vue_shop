@@ -16,6 +16,7 @@
             v-model="paramsInfo.query"
             clearable
           >
+            <!-- 点击查询，直接重新获取用户列表 -->
             <el-button
               slot="append"
               icon="el-icon-search"
@@ -31,11 +32,13 @@
       </el-row>
       <!-- 用户列表区 -->
       <el-table :data="userList" border stripe>
+        <!-- 索引列 -->
         <el-table-column type="index" label="序号"></el-table-column>
         <el-table-column prop="username" label="姓名"> </el-table-column>
         <el-table-column prop="mobile" label="电话"> </el-table-column>
         <el-table-column prop="email" label="邮箱"> </el-table-column>
         <el-table-column prop="role_name" label="角色"> </el-table-column>
+        <!-- 状态列 -->
         <el-table-column label="状态">
           <template slot-scope="scope">
             <el-switch
@@ -45,6 +48,7 @@
             </el-switch>
           </template>
         </el-table-column>
+        <!-- 操作 -->
         <el-table-column label="操作">
           <template slot-scope="scope">
             <div>
@@ -63,7 +67,7 @@
                 size="mini"
                 @click="removeUserById(scope.row.id)"
               ></el-button>
-              <!-- 分配角色按钮 -->
+              <!-- 分配角色按钮,当鼠标放上的时候可以提示文字，鼠标离开文字隐藏 -->
               <el-tooltip
                 effect="dark"
                 content="分配角色"
@@ -107,6 +111,7 @@
         ref="addFormRef"
         label-width="70px"
       >
+        <!-- prop指定的是校验规则 -->
         <el-form-item label="用户名" prop="username">
           <el-input v-model="addForm.username"></el-input>
         </el-form-item>
@@ -141,6 +146,7 @@
         label-width="70px"
       >
         <el-form-item label="用户名">
+          <!-- disabled禁用用户名 prop是验证规则-->
           <el-input v-model="editForm.username" disabled></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
@@ -168,6 +174,7 @@
         <p>
           分配新角色：
           <el-select v-model="selectedReleId" placeholder="请选择">
+            <!-- label是显示的哪个值,value是记住哪个值 -->
             <el-option
               v-for="item in rolesList"
               :key="item.id"
@@ -190,9 +197,11 @@
 export default {
   name: "Users",
   data() {
-    //验证邮箱自定义校验规则
+    //验证邮箱自定义校验规则(ele-ui官方文档就是这么定义)
+    // rule验证规则 ,value验证的值,cd是个回调函数
     var checkEmail = (rule, value, cb) => {
       // /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+/
+      // 验证邮箱的正则
       const regEmail =
         /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/;
       if (regEmail.test(value)) return cb();
@@ -210,7 +219,7 @@ export default {
       paramsInfo: {
         // 搜索关键字
         query: "",
-        // 当前页数
+        // 当前页码
         pagenum: 1,
         // 当前每页显示多少条数据
         pagesize: 2,
@@ -261,6 +270,7 @@ export default {
             trigger: "blur",
           },
           {
+            // 使用自定义的验证规则
             validator: checkEmail,
             trigger: "blur",
           },
@@ -272,6 +282,7 @@ export default {
             trigger: "blur",
           },
           {
+            // 使用自定义的验证规则
             validator: checkMobile,
             trigger: "blur",
           },
@@ -307,12 +318,12 @@ export default {
       this.userList = res.data.users;
       this.total = res.data.total;
     },
-    // 监听pagesize改变的事件
+    // 监听pagesize改变的事件（是一页显示多少条数据的值）
     handleSizeChange(newSize) {
       this.paramsInfo.pagesize = newSize;
       // this.getUserList();
     },
-    // 监听页码值改变
+    // 监听页码值改变 （是当前页码的值）
     handleCurrentChange(newPage) {
       this.paramsInfo.pagenum = newPage;
       // this.getUserList();
@@ -367,8 +378,11 @@ export default {
           }
         );
         if (res.meta.status != 200) return this.$message.error("修改用户失败");
+        // 提示修改成功
         this.$message.success("添加用户成功");
+        // 关闭对话框
         this.editDialogVisible = false;
+        // 刷新数据列表
         this.getUserList();
       });
     },
